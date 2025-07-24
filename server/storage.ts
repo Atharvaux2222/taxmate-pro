@@ -25,7 +25,7 @@ export interface IStorage {
   // Tax filing operations
   getUserTaxFilings(userId: string): Promise<TaxFiling[]>;
   getUserTaxFilingByYear(userId: string, financialYear: string): Promise<TaxFiling | undefined>;
-  getTaxFiling(id: number): Promise<TaxFiling | undefined>;
+  getTaxFiling(id: string): Promise<TaxFiling | undefined>;
   createTaxFiling(taxFiling: InsertTaxFiling): Promise<TaxFiling>;
   updateTaxFiling(id: number, updates: Partial<InsertTaxFiling>): Promise<TaxFiling>;
   
@@ -74,8 +74,8 @@ export class DatabaseStorage implements IStorage {
     return filing;
   }
 
-  async getTaxFiling(id: number): Promise<TaxFiling | undefined> {
-    const [filing] = await db.select().from(taxFilings).where(eq(taxFilings.id, id));
+  async getTaxFiling(id: string): Promise<TaxFiling | undefined> {
+    const [filing] = await db.select().from(taxFilings).where(eq(taxFilings.id, parseInt(id)));
     return filing;
   }
 

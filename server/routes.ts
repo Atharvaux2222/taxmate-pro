@@ -71,7 +71,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get('/api/tax-filings/:id', isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
-      const filingId = parseInt(req.params.id);
+      const filingId = req.params.id;
       
       const filing = await storage.getTaxFiling(filingId);
       if (!filing || filing.userId !== userId) {
@@ -102,7 +102,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         fileType: file.mimetype,
         fileSize: file.size,
         filePath: file.path,
-        status: 'processing'
+        status: 'processing' as const
       });
 
       // Process OCR in background
@@ -124,14 +124,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
           taxFiling = await storage.createTaxFiling({
             userId,
             financialYear: currentYear,
-            status: 'processing',
+            status: 'processing' as const,
             form16Data: req.file,
             extractedData
           });
         } else {
           taxFiling = await storage.updateTaxFiling(taxFiling.id, {
             extractedData,
-            status: 'processing'
+            status: 'processing' as const
           });
         }
 
@@ -139,7 +139,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const suggestions = await generateTaxSuggestions(extractedData);
         await storage.updateTaxFiling(taxFiling.id, {
           taxSuggestions: suggestions,
-          status: 'completed'
+          status: 'completed' as const
         });
 
         res.json({
@@ -187,8 +187,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Save user message
       const userMessage = await storage.createChatMessage({
         userId,
-        message,
-        isBot: false
+        message
       });
 
       // Generate bot response

@@ -42,7 +42,7 @@ export const taxFilings = pgTable("tax_filings", {
   id: serial("id").primaryKey(),
   userId: varchar("user_id").notNull().references(() => users.id),
   financialYear: varchar("financial_year").notNull(),
-  status: varchar("status").notNull().default("draft"), // draft, processing, completed, filed
+  status: varchar("status", { enum: ["draft", "processing", "completed", "filed"] }).notNull().default("draft"),
   form16Data: jsonb("form16_data"),
   extractedData: jsonb("extracted_data"),
   taxSuggestions: jsonb("tax_suggestions"),
@@ -69,7 +69,7 @@ export const fileUploads = pgTable("file_uploads", {
   fileType: varchar("file_type").notNull(),
   fileSize: integer("file_size").notNull(),
   filePath: varchar("file_path").notNull(),
-  status: varchar("status").notNull().default("pending"), // pending, processing, completed, failed
+  status: varchar("status", { enum: ["pending", "processing", "completed", "failed"] }).notNull().default("pending"),
   ocrText: text("ocr_text"),
   createdAt: timestamp("created_at").defaultNow(),
 });
