@@ -3,7 +3,7 @@ import { createServer, type Server } from "http";
 import multer from "multer";
 import path from "path";
 import { storage } from "./storage";
-import { setupAuth, isAuthenticated } from "./auth";
+
 import { extractForm16Data, generateTaxSuggestions, generateChatbotResponse } from "./services/gemini";
 import { processFileForOCR } from "./services/ocr";
 import { insertTaxFilingSchema, insertChatMessageSchema, insertFileUploadSchema } from "@shared/schema";
@@ -25,26 +25,21 @@ const upload = multer({
 });
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Auth middleware
-  await setupAuth(app);
-
-  // User routes (auth routes are now in auth.ts)
-
   // Tax filing routes
-  app.get('/api/tax-filings', isAuthenticated, async (req: any, res) => {
+  app.get('/api/tax-filings', async (req: any, res) => {
     try {
-      const userId = req.user.id;
-      const filings = await storage.getUserTaxFilings(userId);
-      res.json(filings);
+      // For now, return empty array since we removed authentication
+      res.json([]);
     } catch (error) {
       console.error("Error fetching tax filings:", error);
       res.status(500).json({ message: "Failed to fetch tax filings" });
     }
   });
 
-  app.post('/api/tax-filings', isAuthenticated, async (req: any, res) => {
+  app.post('/api/tax-filings', async (req: any, res) => {
     try {
-      const userId = req.user.id;
+      // For demo purposes, use a default user ID
+      const userId = "demo_user";
       const filingData = insertTaxFilingSchema.parse({
         ...req.body,
         userId
@@ -58,13 +53,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get('/api/tax-filings/:id', isAuthenticated, async (req: any, res) => {
+  app.get('/api/tax-filings/:id', async (req: any, res) => {
     try {
-      const userId = req.user.id;
       const filingId = req.params.id;
-      
       const filing = await storage.getTaxFiling(filingId);
-      if (!filing || filing.userId !== userId) {
+      
+      if (!filing) {
         return res.status(404).json({ message: "Tax filing not found" });
       }
       
@@ -76,13 +70,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // File upload and OCR processing
-  app.post('/api/upload-form16', isAuthenticated, upload.single('form16'), async (req: any, res) => {
+  app.post('/api/upload-form16', upload.single('form16'), async (req: any, res) => {
     try {
       if (!req.file) {
         return res.status(400).json({ message: "No file uploaded" });
       }
 
-      const userId = req.user.id;
+      const userId = "demo_user";
       const file = req.file;
 
       // Save file upload record
@@ -154,9 +148,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Chat routes
-  app.get('/api/chat/messages', isAuthenticated, async (req: any, res) => {
+  app.get('/api/chat/messages', async (req: any, res) => {
     try {
-      const userId = req.user.id;
+      const userId = "demo_user";
       const messages = await storage.getUserChatMessages(userId);
       res.json(messages);
     } catch (error) {
@@ -165,9 +159,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post('/api/chat/messages', isAuthenticated, async (req: any, res) => {
+  app.post('/api/chat/messages', async (req: any, res) => {
     try {
-      const userId = req.user.id;
+      const userId = "demo_user";
       const { message } = req.body;
 
       if (!message || typeof message !== 'string') {
@@ -203,9 +197,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Dashboard stats
-  app.get('/api/dashboard/stats', isAuthenticated, async (req: any, res) => {
+  app.get('/api/dashboard/stats', async (req: any, res) => {
     try {
-      const userId = req.user.id;
+      const userId = "demo_user";
       
       const currentFiling = await storage.getUserTaxFilingByYear(userId, '2023-24');
       let stats = {
