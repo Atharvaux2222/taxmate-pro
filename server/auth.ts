@@ -50,12 +50,19 @@ export function setupAuth(app: Express) {
     }),
   );
 
-  passport.serializeUser((user, done) => done(null, user.id));
+  passport.serializeUser((user, done) => {
+    console.log('Serializing user:', user.id);
+    done(null, user.id);
+  });
+  
   passport.deserializeUser(async (id: string, done) => {
+    console.log('Deserializing user with ID:', id);
     try {
       const user = await storage.getUserById(id);
+      console.log('User found during deserialization:', user ? user.id : 'null');
       done(null, user);
     } catch (error) {
+      console.error('Error during deserialization:', error);
       done(error);
     }
   });
@@ -90,7 +97,14 @@ export function setupAuth(app: Express) {
       });
 
       req.login(user, (err) => {
-        if (err) return next(err);
+        if (err) {
+          console.error('Login error:', err);
+          return next(err);
+        }
+        
+        console.log('User registered and logged in:', user.id);
+        console.log('Session ID after login:', req.sessionID);
+        
         res.status(201).json({
           id: user.id,
           username: user.username,
@@ -107,6 +121,9 @@ export function setupAuth(app: Express) {
 
   app.post("/api/login", passport.authenticate("local"), (req, res) => {
     const user = req.user!;
+    console.log('User logged in:', user.id);
+    console.log('Session ID after login:', req.sessionID);
+    
     res.status(200).json({
       id: user.id,
       username: user.username,
@@ -124,6 +141,10 @@ export function setupAuth(app: Express) {
   });
 
   app.get("/api/user", (req, res) => {
+    console.log('Session ID:', req.sessionID);
+    console.log('Is authenticated:', req.isAuthenticated());
+    console.log('User:', req.user);
+    
     if (!req.isAuthenticated()) return res.sendStatus(401);
     const user = req.user!;
     res.json({

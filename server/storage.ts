@@ -57,8 +57,8 @@ class DatabaseStorage implements IStorage {
   }
 
   async createUser(userData: InsertUser): Promise<User> {
-    // Generate a unique user ID
-    const userId = `user_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    // Generate a unique user ID if not provided
+    const userId = userData.id || `user_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
     
     const [user] = await db
       .insert(users)

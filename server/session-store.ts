@@ -20,10 +20,12 @@ export function getSession() {
     store: getSessionStore(),
     resave: false,
     saveUninitialized: false,
+    rolling: true, // Reset expiration on activity
     cookie: {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
+      secure: false, // Set to false for development
       maxAge: sessionTtl,
+      sameSite: 'lax',
     },
   });
 }
