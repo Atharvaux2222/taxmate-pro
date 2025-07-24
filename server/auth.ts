@@ -109,8 +109,8 @@ export function setupAuth(app: Express) {
         username,
         email,
         password: await hashPassword(password),
-        firstName,
-        lastName,
+        firstName: firstName || null,
+        lastName: lastName || null,
       });
 
       req.login(user, (err) => {

@@ -87,10 +87,9 @@ export type InsertFileUpload = typeof fileUploads.$inferInsert;
 export type FileUpload = typeof fileUploads.$inferSelect;
 
 export const insertUserSchema = createInsertSchema(users).omit({
+  id: true,
   createdAt: true,
   updatedAt: true,
-}).partial({
-  id: true,
 });
 
 export const insertTaxFilingSchema = createInsertSchema(taxFilings).omit({

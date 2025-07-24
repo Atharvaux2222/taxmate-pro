@@ -21,7 +21,7 @@ export interface IStorage {
   getUserById(id: string): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
   getUserByEmail(email: string): Promise<User | undefined>;
-  createUser(user: InsertUser): Promise<User>;
+  createUser(user: Omit<InsertUser, 'id'> & { id?: string }): Promise<User>;
   
   // Tax filing operations
   getUserTaxFilings(userId: string): Promise<TaxFiling[]>;
@@ -56,7 +56,7 @@ class DatabaseStorage implements IStorage {
     return user;
   }
 
-  async createUser(userData: InsertUser): Promise<User> {
+  async createUser(userData: Omit<InsertUser, 'id'> & { id?: string }): Promise<User> {
     // Generate a unique user ID if not provided
     const userId = userData.id || `user_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
     
