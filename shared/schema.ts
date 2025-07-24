@@ -42,7 +42,7 @@ export const taxFilings = pgTable("tax_filings", {
   id: serial("id").primaryKey(),
   userId: varchar("user_id").notNull().references(() => users.id),
   financialYear: varchar("financial_year").notNull(),
-  status: varchar("status", { enum: ["draft", "processing", "completed", "filed"] }).notNull().default("draft"),
+  status: varchar("status", { enum: ["draft", "completed", "filed"] }).notNull().default("draft"),
   form16Data: jsonb("form16_data"),
   extractedData: jsonb("extracted_data"),
   taxSuggestions: jsonb("tax_suggestions"),
@@ -57,7 +57,7 @@ export const chatMessages = pgTable("chat_messages", {
   userId: varchar("user_id").notNull().references(() => users.id),
   message: text("message").notNull(),
   response: text("response"),
-  isBot: boolean("is_bot").notNull().default(false),
+  role: varchar("role", { enum: ["user", "assistant"] }).notNull(),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -65,7 +65,7 @@ export const chatMessages = pgTable("chat_messages", {
 export const fileUploads = pgTable("file_uploads", {
   id: serial("id").primaryKey(),
   userId: varchar("user_id").notNull().references(() => users.id),
-  fileName: varchar("file_name").notNull(),
+  filename: varchar("filename").notNull(),
   fileType: varchar("file_type").notNull(),
   fileSize: integer("file_size").notNull(),
   filePath: varchar("file_path").notNull(),

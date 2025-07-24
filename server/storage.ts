@@ -38,7 +38,7 @@ export interface IStorage {
   updateFileUpload(id: number, updates: Partial<InsertFileUpload>): Promise<FileUpload>;
 }
 
-export class DatabaseStorage implements IStorage {
+class DatabaseStorage implements IStorage {
   // User operations
   // (IMPORTANT) these user operations are mandatory for Replit Auth.
   async getUser(id: string): Promise<User | undefined> {

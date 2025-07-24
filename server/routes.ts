@@ -2,7 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import multer from "multer";
 import path from "path";
-import { storage } from "./storage-mongodb";
+import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./replitAuth";
 import { extractForm16Data, generateTaxSuggestions, generateChatbotResponse } from "./services/gemini";
 import { processFileForOCR } from "./services/ocr";
@@ -98,7 +98,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Save file upload record
       const fileUpload = await storage.createFileUpload({
         userId,
-        fileName: file.originalname,
+        filename: file.originalname,
         fileType: file.mimetype,
         fileSize: file.size,
         filePath: file.path,
@@ -124,14 +124,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
           taxFiling = await storage.createTaxFiling({
             userId,
             financialYear: currentYear,
-            status: 'processing' as const,
+            status: 'draft' as const,
             form16Data: req.file,
             extractedData
           });
         } else {
           taxFiling = await storage.updateTaxFiling(taxFiling.id, {
             extractedData,
-            status: 'processing' as const
+            status: 'draft' as const
           });
         }
 
@@ -187,7 +187,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Save user message
       const userMessage = await storage.createChatMessage({
         userId,
-        message
+        message,
+        role: 'user' as const
       });
 
       // Generate bot response
@@ -197,7 +198,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const botMessage = await storage.createChatMessage({
         userId,
         message: botResponse,
-        isBot: true
+        role: 'assistant' as const
       });
 
       res.json({
@@ -236,9 +237,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           case 'draft':
             stats.progress = 25;
             break;
-          case 'processing':
-            stats.progress = 75;
-            break;
+
           case 'completed':
             stats.progress = 100;
             break;

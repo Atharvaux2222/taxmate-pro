@@ -2,10 +2,7 @@ import { createWorker } from 'tesseract.js';
 
 export async function extractTextFromImage(imagePath: string): Promise<string> {
   try {
-    const worker = await createWorker();
-    
-    await worker.loadLanguage('eng');
-    await worker.initialize('eng');
+    const worker = await createWorker('eng');
     
     const { data: { text } } = await worker.recognize(imagePath);
     

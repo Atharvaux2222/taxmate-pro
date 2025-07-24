@@ -1,21 +1,22 @@
 import session from 'express-session';
-import MongoStore from 'connect-mongo';
+import connectPgSimple from 'connect-pg-simple';
+
+const PgSession = connectPgSimple(session);
 
 export function getSessionStore() {
-  const mongoUrl = process.env.MONGODB_URI || 'mongodb://localhost:27017/eztaxmate';
-  
-  return MongoStore.create({
-    mongoUrl,
-    touchAfter: 24 * 3600, // lazy session update
-    ttl: 7 * 24 * 60 * 60 // 7 days
+  return new PgSession({
+    conString: process.env.DATABASE_URL,
+    tableName: 'sessions',
+    createTableIfMissing: false, // We'll handle this with Drizzle
   });
 }
 
 export function getSession() {
   const sessionTtl = 7 * 24 * 60 * 60 * 1000; // 1 week
+  const sessionSecret = process.env.SESSION_SECRET || 'fallback-dev-secret-change-in-production';
   
   return session({
-    secret: process.env.SESSION_SECRET!,
+    secret: sessionSecret,
     store: getSessionStore(),
     resave: false,
     saveUninitialized: false,
