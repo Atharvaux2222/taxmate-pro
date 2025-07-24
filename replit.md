@@ -4,6 +4,8 @@
 
 EZTaxMate is a full-stack web application designed to simplify income tax return (ITR-1) filing for newly joined employees in India (0-3 years experience). The app uses AI to automatically extract data from Form 16 documents, provides beginner-friendly explanations of tax terms, offers personalized tax-saving suggestions, and includes an AI-powered chatbot for user queries.
 
+**Status**: Successfully migrated from Replit Agent to Replit environment on January 24, 2025. All core functionality is operational with PostgreSQL database and proper security implementation.
+
 ## User Preferences
 
 Preferred communication style: Simple, everyday language.
@@ -27,14 +29,14 @@ Preferred communication style: Simple, everyday language.
 - **Database ORM**: Drizzle ORM for type-safe database operations
 
 ### Database Design
-- **Database**: PostgreSQL (configured for Neon serverless)
+- **Database**: PostgreSQL (migrated from MongoDB on Jan 24, 2025)
 - **Schema**: Located in `shared/schema.ts` for type sharing
 - **Tables**:
   - `users`: User profile information
-  - `sessions`: Session storage for authentication
+  - `sessions`: Session storage for authentication (migrated to PostgreSQL)
   - `taxFilings`: Tax filing records with extracted data
-  - `chatMessages`: Chat history with AI bot
-  - `fileUploads`: File upload tracking
+  - `chatMessages`: Chat history with AI bot (updated schema with role field)
+  - `fileUploads`: File upload tracking (filename field corrected)
 
 ## Key Components
 
