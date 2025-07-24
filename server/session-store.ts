@@ -21,13 +21,14 @@ export function getSession() {
     resave: false,
     saveUninitialized: false,
     rolling: true,
-    name: 'connect.sid', // Use default session name
+    name: 'connect.sid',
     cookie: {
       httpOnly: true,
-      secure: false,
+      secure: process.env.NODE_ENV === 'production',
       maxAge: sessionTtl,
       sameSite: 'lax',
       path: '/',
+      domain: process.env.NODE_ENV === 'development' ? undefined : undefined,
     },
   });
 }

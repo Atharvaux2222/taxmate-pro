@@ -4,7 +4,7 @@
 
 EZTaxMate is a full-stack web application designed to simplify income tax return (ITR-1) filing for newly joined employees in India (0-3 years experience). The app uses AI to automatically extract data from Form 16 documents, provides beginner-friendly explanations of tax terms, offers personalized tax-saving suggestions, and includes an AI-powered chatbot for user queries.
 
-**Status**: Successfully migrated from Replit Agent to Replit environment on January 24, 2025. All core functionality is operational with PostgreSQL database and proper security implementation.
+**Status**: Successfully migrated from Replit Agent to Replit environment on January 24, 2025. All core functionality is operational with PostgreSQL database, proper security implementation, and fixed session management for authentication.
 
 ## User Preferences
 
@@ -23,8 +23,8 @@ Preferred communication style: Simple, everyday language.
 ### Backend Architecture
 - **Runtime**: Node.js with Express.js
 - **Language**: TypeScript with ES modules
-- **Authentication**: Replit Auth with OpenID Connect
-- **Session Management**: Express sessions with PostgreSQL storage
+- **Authentication**: Local passport authentication with bcrypt password hashing
+- **Session Management**: Express sessions with PostgreSQL storage (connect-pg-simple)
 - **File Upload**: Multer for handling Form 16 uploads
 - **Database ORM**: Drizzle ORM for type-safe database operations
 
@@ -32,8 +32,8 @@ Preferred communication style: Simple, everyday language.
 - **Database**: PostgreSQL (migrated from MongoDB on Jan 24, 2025)
 - **Schema**: Located in `shared/schema.ts` for type sharing
 - **Tables**:
-  - `users`: User profile information
-  - `sessions`: Session storage for authentication (migrated to PostgreSQL)
+  - `users`: User profile information with local authentication
+  - `sessions`: Session storage for authentication (PostgreSQL-backed)
   - `taxFilings`: Tax filing records with extracted data
   - `chatMessages`: Chat history with AI bot (updated schema with role field)
   - `fileUploads`: File upload tracking (filename field corrected)
