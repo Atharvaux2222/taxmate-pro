@@ -1,8 +1,4 @@
-import { useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { useAuth } from "@/hooks/useAuth";
-import { useToast } from "@/hooks/use-toast";
-import { isUnauthorizedError } from "@/lib/authUtils";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
@@ -11,39 +7,15 @@ import { Link } from "wouter";
 import { CheckCircle, Clock, Plus, FileText, TrendingUp, MessageCircle, PiggyBank, DollarSign } from "lucide-react";
 
 export default function Dashboard() {
-  const { toast } = useToast();
-  const { isAuthenticated, isLoading, user } = useAuth();
-
-  // Redirect to home if not authenticated
-  useEffect(() => {
-    if (!isLoading && !isAuthenticated) {
-      toast({
-        title: "Unauthorized",
-        description: "You are logged out. Logging in again...",
-        variant: "destructive",
-      });
-      setTimeout(() => {
-        window.location.href = "/api/login";
-      }, 500);
-      return;
-    }
-  }, [isAuthenticated, isLoading, toast]);
-
   const { data: stats, isLoading: statsLoading } = useQuery({
     queryKey: ["/api/dashboard/stats"],
-    enabled: isAuthenticated,
     retry: false,
   });
 
   const { data: taxFilings, isLoading: filingsLoading } = useQuery({
     queryKey: ["/api/tax-filings"],
-    enabled: isAuthenticated,
     retry: false,
   });
-
-  if (isLoading || !isAuthenticated) {
-    return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
-  }
 
   const getProgressColor = (progress: number) => {
     if (progress >= 75) return "bg-secondary";
@@ -71,7 +43,7 @@ export default function Dashboard() {
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 pb-6 border-b border-neutral-100">
           <div>
             <h1 className="text-3xl font-bold text-neutral-800 mb-2">
-              Welcome back, {user?.firstName || 'User'}! 👋
+              Welcome to EZTaxMate! 👋
             </h1>
             <p className="text-neutral-600">Let's get your taxes sorted for FY 2023-24</p>
           </div>
