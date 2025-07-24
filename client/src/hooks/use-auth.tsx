@@ -60,6 +60,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     },
     onSuccess: (user: User) => {
       queryClient.setQueryData(["/api/user"], user);
+      // Refetch user data to ensure auth state is updated
+      queryClient.invalidateQueries({ queryKey: ["/api/user"] });
       toast({
         title: "Login successful",
         description: `Welcome back, ${user.firstName || user.username}!`,
@@ -85,6 +87,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     },
     onSuccess: (user: User) => {
       queryClient.setQueryData(["/api/user"], user);
+      // Refetch user data to ensure auth state is updated
+      queryClient.invalidateQueries({ queryKey: ["/api/user"] });
       toast({
         title: "Registration successful",
         description: `Welcome to EZTaxMate, ${user.firstName || user.username}!`,

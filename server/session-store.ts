@@ -20,12 +20,14 @@ export function getSession() {
     store: getSessionStore(),
     resave: false,
     saveUninitialized: false,
-    rolling: true, // Reset expiration on activity
+    rolling: true,
+    name: 'connect.sid', // Use default session name
     cookie: {
       httpOnly: true,
-      secure: false, // Set to false for development
+      secure: false,
       maxAge: sessionTtl,
       sameSite: 'lax',
+      path: '/',
     },
   });
 }
