@@ -25,14 +25,14 @@ export const sessions = pgTable(
   (table) => [index("IDX_session_expire").on(table.expire)],
 );
 
-// User storage table.
-// (IMPORTANT) This table is mandatory for Replit Auth, don't drop it.
+// User storage table - updated for local authentication
 export const users = pgTable("users", {
-  id: varchar("id").primaryKey().notNull(),
-  email: varchar("email").unique(),
-  firstName: varchar("first_name"),
-  lastName: varchar("last_name"),
-  profileImageUrl: varchar("profile_image_url"),
+  id: serial("id").primaryKey(),
+  username: varchar("username", { length: 50 }).notNull().unique(),
+  email: varchar("email", { length: 100 }).notNull().unique(),
+  password: varchar("password", { length: 255 }).notNull(),
+  firstName: varchar("first_name", { length: 50 }),
+  lastName: varchar("last_name", { length: 50 }),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
@@ -40,7 +40,7 @@ export const users = pgTable("users", {
 // Tax filings table
 export const taxFilings = pgTable("tax_filings", {
   id: serial("id").primaryKey(),
-  userId: varchar("user_id").notNull().references(() => users.id),
+  userId: integer("user_id").notNull().references(() => users.id),
   financialYear: varchar("financial_year").notNull(),
   status: varchar("status", { enum: ["draft", "completed", "filed"] }).notNull().default("draft"),
   form16Data: jsonb("form16_data"),
@@ -54,7 +54,7 @@ export const taxFilings = pgTable("tax_filings", {
 // Chat messages table
 export const chatMessages = pgTable("chat_messages", {
   id: serial("id").primaryKey(),
-  userId: varchar("user_id").notNull().references(() => users.id),
+  userId: integer("user_id").notNull().references(() => users.id),
   message: text("message").notNull(),
   response: text("response"),
   role: varchar("role", { enum: ["user", "assistant"] }).notNull(),
@@ -64,7 +64,7 @@ export const chatMessages = pgTable("chat_messages", {
 // File uploads table
 export const fileUploads = pgTable("file_uploads", {
   id: serial("id").primaryKey(),
-  userId: varchar("user_id").notNull().references(() => users.id),
+  userId: integer("user_id").notNull().references(() => users.id),
   filename: varchar("filename").notNull(),
   fileType: varchar("file_type").notNull(),
   fileSize: integer("file_size").notNull(),
@@ -74,7 +74,7 @@ export const fileUploads = pgTable("file_uploads", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
-export type UpsertUser = typeof users.$inferInsert;
+export type InsertUser = typeof users.$inferInsert;
 export type User = typeof users.$inferSelect;
 
 export type InsertTaxFiling = typeof taxFilings.$inferInsert;
@@ -85,6 +85,12 @@ export type ChatMessage = typeof chatMessages.$inferSelect;
 
 export type InsertFileUpload = typeof fileUploads.$inferInsert;
 export type FileUpload = typeof fileUploads.$inferSelect;
+
+export const insertUserSchema = createInsertSchema(users).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
 
 export const insertTaxFilingSchema = createInsertSchema(taxFilings).omit({
   id: true,

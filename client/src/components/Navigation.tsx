@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useAuth } from "@/hooks/useAuth";
+import { useAuth } from "@/hooks/use-auth";
 import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
@@ -8,16 +8,12 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Calculator, Menu, LogOut, User, Home, Upload, TrendingUp, MessageCircle } from "lucide-react";
 
 export default function Navigation() {
-  const { isAuthenticated, user } = useAuth();
+  const { user, logoutMutation } = useAuth();
   const [location] = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  const handleLogin = () => {
-    window.location.href = "/api/login";
-  };
-
   const handleLogout = () => {
-    window.location.href = "/api/logout";
+    logoutMutation.mutate();
   };
 
   const navItems = [
@@ -47,7 +43,7 @@ export default function Navigation() {
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-6">
-            {isAuthenticated ? (
+            {user ? (
               <>
                 {navItems.map((item) => (
                   <Link key={item.href} href={item.href}>
@@ -67,9 +63,8 @@ export default function Navigation() {
                   <DropdownMenuTrigger asChild>
                     <Button variant="ghost" className="relative h-8 w-8 rounded-full">
                       <Avatar className="h-8 w-8">
-                        <AvatarImage src={user?.profileImageUrl} alt={user?.firstName} />
                         <AvatarFallback>
-                          {user?.firstName?.[0] || user?.email?.[0] || 'U'}
+                          {user?.firstName?.[0] || user?.username?.[0] || 'U'}
                         </AvatarFallback>
                       </Avatar>
                     </Button>
@@ -94,12 +89,11 @@ export default function Navigation() {
               </>
             ) : (
               <>
-                <a href="#features" className="text-neutral-600 hover:text-primary transition-colors">Features</a>
-                <a href="#how-it-works" className="text-neutral-600 hover:text-primary transition-colors">How it Works</a>
-                <a href="#pricing" className="text-neutral-600 hover:text-primary transition-colors">Pricing</a>
-                <Button onClick={handleLogin} className="bg-primary hover:bg-blue-700">
-                  Login with Google
-                </Button>
+                <Link href="/auth">
+                  <Button className="bg-primary hover:bg-blue-700">
+                    Sign In
+                  </Button>
+                </Link>
               </>
             )}
           </div>
@@ -114,14 +108,13 @@ export default function Navigation() {
               </SheetTrigger>
               <SheetContent side="right" className="w-80">
                 <div className="flex flex-col space-y-4 mt-8">
-                  {isAuthenticated ? (
+                  {user ? (
                     <>
                       {/* User Info */}
                       <div className="flex items-center space-x-3 p-4 bg-neutral-100 rounded-lg">
                         <Avatar className="h-10 w-10">
-                          <AvatarImage src={user?.profileImageUrl} alt={user?.firstName} />
                           <AvatarFallback>
-                            {user?.firstName?.[0] || user?.email?.[0] || 'U'}
+                            {user?.firstName?.[0] || user?.username?.[0] || 'U'}
                           </AvatarFallback>
                         </Avatar>
                         <div>
@@ -160,12 +153,11 @@ export default function Navigation() {
                     </>
                   ) : (
                     <>
-                      <a href="#features" className="text-neutral-600 hover:text-primary py-2">Features</a>
-                      <a href="#how-it-works" className="text-neutral-600 hover:text-primary py-2">How it Works</a>
-                      <a href="#pricing" className="text-neutral-600 hover:text-primary py-2">Pricing</a>
-                      <Button onClick={handleLogin} className="w-full bg-primary hover:bg-blue-700">
-                        Login with Google
-                      </Button>
+                      <Link href="/auth">
+                        <Button className="w-full bg-primary hover:bg-blue-700" onClick={() => setMobileMenuOpen(false)}>
+                          Sign In
+                        </Button>
+                      </Link>
                     </>
                   )}
                 </div>

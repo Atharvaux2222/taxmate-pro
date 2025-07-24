@@ -4,7 +4,7 @@ import {
   chatMessages,
   fileUploads,
   type User,
-  type UpsertUser,
+  type InsertUser,
   type TaxFiling,
   type InsertTaxFiling,
   type ChatMessage,
@@ -18,19 +18,20 @@ import { eq, and } from "drizzle-orm";
 // Interface for storage operations
 export interface IStorage {
   // User operations
-  // (IMPORTANT) these user operations are mandatory for Replit Auth.
-  getUser(id: string): Promise<User | undefined>;
-  upsertUser(user: UpsertUser): Promise<User>;
+  getUser(id: number): Promise<User | undefined>;
+  getUserByUsername(username: string): Promise<User | undefined>;
+  getUserByEmail(email: string): Promise<User | undefined>;
+  createUser(user: InsertUser): Promise<User>;
   
   // Tax filing operations
-  getUserTaxFilings(userId: string): Promise<TaxFiling[]>;
-  getUserTaxFilingByYear(userId: string, financialYear: string): Promise<TaxFiling | undefined>;
+  getUserTaxFilings(userId: number): Promise<TaxFiling[]>;
+  getUserTaxFilingByYear(userId: number, financialYear: string): Promise<TaxFiling | undefined>;
   getTaxFiling(id: string): Promise<TaxFiling | undefined>;
   createTaxFiling(taxFiling: InsertTaxFiling): Promise<TaxFiling>;
   updateTaxFiling(id: number, updates: Partial<InsertTaxFiling>): Promise<TaxFiling>;
   
   // Chat operations
-  getUserChatMessages(userId: string): Promise<ChatMessage[]>;
+  getUserChatMessages(userId: number): Promise<ChatMessage[]>;
   createChatMessage(message: InsertChatMessage): Promise<ChatMessage>;
   
   // File upload operations
@@ -40,33 +41,35 @@ export interface IStorage {
 
 class DatabaseStorage implements IStorage {
   // User operations
-  // (IMPORTANT) these user operations are mandatory for Replit Auth.
-  async getUser(id: string): Promise<User | undefined> {
+  async getUser(id: number): Promise<User | undefined> {
     const [user] = await db.select().from(users).where(eq(users.id, id));
     return user;
   }
 
-  async upsertUser(userData: UpsertUser): Promise<User> {
+  async getUserByUsername(username: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.username, username));
+    return user;
+  }
+
+  async getUserByEmail(email: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.email, email));
+    return user;
+  }
+
+  async createUser(userData: InsertUser): Promise<User> {
     const [user] = await db
       .insert(users)
       .values(userData)
-      .onConflictDoUpdate({
-        target: users.id,
-        set: {
-          ...userData,
-          updatedAt: new Date(),
-        },
-      })
       .returning();
     return user;
   }
 
   // Tax filing operations
-  async getUserTaxFilings(userId: string): Promise<TaxFiling[]> {
+  async getUserTaxFilings(userId: number): Promise<TaxFiling[]> {
     return await db.select().from(taxFilings).where(eq(taxFilings.userId, userId));
   }
 
-  async getUserTaxFilingByYear(userId: string, financialYear: string): Promise<TaxFiling | undefined> {
+  async getUserTaxFilingByYear(userId: number, financialYear: string): Promise<TaxFiling | undefined> {
     const [filing] = await db
       .select()
       .from(taxFilings)
@@ -97,7 +100,7 @@ class DatabaseStorage implements IStorage {
   }
 
   // Chat operations
-  async getUserChatMessages(userId: string): Promise<ChatMessage[]> {
+  async getUserChatMessages(userId: number): Promise<ChatMessage[]> {
     return await db.select().from(chatMessages).where(eq(chatMessages.userId, userId));
   }
 

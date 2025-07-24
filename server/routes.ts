@@ -3,7 +3,7 @@ import { createServer, type Server } from "http";
 import multer from "multer";
 import path from "path";
 import { storage } from "./storage";
-import { setupAuth, isAuthenticated } from "./replitAuth";
+import { setupAuth, isAuthenticated } from "./auth";
 import { extractForm16Data, generateTaxSuggestions, generateChatbotResponse } from "./services/gemini";
 import { processFileForOCR } from "./services/ocr";
 import { insertTaxFilingSchema, insertChatMessageSchema, insertFileUploadSchema } from "@shared/schema";
@@ -28,22 +28,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Auth middleware
   await setupAuth(app);
 
-  // Auth routes
-  app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
-    try {
-      const userId = req.user.claims.sub;
-      const user = await storage.getUser(userId);
-      res.json(user);
-    } catch (error) {
-      console.error("Error fetching user:", error);
-      res.status(500).json({ message: "Failed to fetch user" });
-    }
-  });
+  // User routes (auth routes are now in auth.ts)
 
   // Tax filing routes
   app.get('/api/tax-filings', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const filings = await storage.getUserTaxFilings(userId);
       res.json(filings);
     } catch (error) {
@@ -54,7 +44,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post('/api/tax-filings', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const filingData = insertTaxFilingSchema.parse({
         ...req.body,
         userId
@@ -70,7 +60,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get('/api/tax-filings/:id', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const filingId = req.params.id;
       
       const filing = await storage.getTaxFiling(filingId);
@@ -92,7 +82,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "No file uploaded" });
       }
 
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const file = req.file;
 
       // Save file upload record
@@ -166,7 +156,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Chat routes
   app.get('/api/chat/messages', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const messages = await storage.getUserChatMessages(userId);
       res.json(messages);
     } catch (error) {
@@ -177,7 +167,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post('/api/chat/messages', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const { message } = req.body;
 
       if (!message || typeof message !== 'string') {
@@ -215,7 +205,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Dashboard stats
   app.get('/api/dashboard/stats', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       
       const currentFiling = await storage.getUserTaxFilingByYear(userId, '2023-24');
       let stats = {
