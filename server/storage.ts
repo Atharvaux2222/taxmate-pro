@@ -18,20 +18,20 @@ import { eq, and } from "drizzle-orm";
 // Interface for storage operations
 export interface IStorage {
   // User operations
-  getUser(id: number): Promise<User | undefined>;
+  getUserById(id: string): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
   getUserByEmail(email: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
   
   // Tax filing operations
-  getUserTaxFilings(userId: number): Promise<TaxFiling[]>;
-  getUserTaxFilingByYear(userId: number, financialYear: string): Promise<TaxFiling | undefined>;
+  getUserTaxFilings(userId: string): Promise<TaxFiling[]>;
+  getUserTaxFilingByYear(userId: string, financialYear: string): Promise<TaxFiling | undefined>;
   getTaxFiling(id: string): Promise<TaxFiling | undefined>;
   createTaxFiling(taxFiling: InsertTaxFiling): Promise<TaxFiling>;
   updateTaxFiling(id: number, updates: Partial<InsertTaxFiling>): Promise<TaxFiling>;
   
   // Chat operations
-  getUserChatMessages(userId: number): Promise<ChatMessage[]>;
+  getUserChatMessages(userId: string): Promise<ChatMessage[]>;
   createChatMessage(message: InsertChatMessage): Promise<ChatMessage>;
   
   // File upload operations
@@ -41,7 +41,7 @@ export interface IStorage {
 
 class DatabaseStorage implements IStorage {
   // User operations
-  async getUser(id: number): Promise<User | undefined> {
+  async getUserById(id: string): Promise<User | undefined> {
     const [user] = await db.select().from(users).where(eq(users.id, id));
     return user;
   }
@@ -57,19 +57,25 @@ class DatabaseStorage implements IStorage {
   }
 
   async createUser(userData: InsertUser): Promise<User> {
+    // Generate a unique user ID
+    const userId = `user_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    
     const [user] = await db
       .insert(users)
-      .values(userData)
+      .values({
+        ...userData,
+        id: userId
+      })
       .returning();
     return user;
   }
 
   // Tax filing operations
-  async getUserTaxFilings(userId: number): Promise<TaxFiling[]> {
+  async getUserTaxFilings(userId: string): Promise<TaxFiling[]> {
     return await db.select().from(taxFilings).where(eq(taxFilings.userId, userId));
   }
 
-  async getUserTaxFilingByYear(userId: number, financialYear: string): Promise<TaxFiling | undefined> {
+  async getUserTaxFilingByYear(userId: string, financialYear: string): Promise<TaxFiling | undefined> {
     const [filing] = await db
       .select()
       .from(taxFilings)
@@ -100,7 +106,7 @@ class DatabaseStorage implements IStorage {
   }
 
   // Chat operations
-  async getUserChatMessages(userId: number): Promise<ChatMessage[]> {
+  async getUserChatMessages(userId: string): Promise<ChatMessage[]> {
     return await db.select().from(chatMessages).where(eq(chatMessages.userId, userId));
   }
 

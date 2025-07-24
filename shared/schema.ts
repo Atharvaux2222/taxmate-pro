@@ -27,7 +27,7 @@ export const sessions = pgTable(
 
 // User storage table - updated for local authentication
 export const users = pgTable("users", {
-  id: serial("id").primaryKey(),
+  id: varchar("id").primaryKey().notNull(),
   username: varchar("username", { length: 50 }).notNull().unique(),
   email: varchar("email", { length: 100 }).notNull().unique(),
   password: varchar("password", { length: 255 }).notNull(),
@@ -40,7 +40,7 @@ export const users = pgTable("users", {
 // Tax filings table
 export const taxFilings = pgTable("tax_filings", {
   id: serial("id").primaryKey(),
-  userId: integer("user_id").notNull().references(() => users.id),
+  userId: varchar("user_id").notNull().references(() => users.id),
   financialYear: varchar("financial_year").notNull(),
   status: varchar("status", { enum: ["draft", "completed", "filed"] }).notNull().default("draft"),
   form16Data: jsonb("form16_data"),
@@ -54,7 +54,7 @@ export const taxFilings = pgTable("tax_filings", {
 // Chat messages table
 export const chatMessages = pgTable("chat_messages", {
   id: serial("id").primaryKey(),
-  userId: integer("user_id").notNull().references(() => users.id),
+  userId: varchar("user_id").notNull().references(() => users.id),
   message: text("message").notNull(),
   response: text("response"),
   role: varchar("role", { enum: ["user", "assistant"] }).notNull(),
@@ -64,7 +64,7 @@ export const chatMessages = pgTable("chat_messages", {
 // File uploads table
 export const fileUploads = pgTable("file_uploads", {
   id: serial("id").primaryKey(),
-  userId: integer("user_id").notNull().references(() => users.id),
+  userId: varchar("user_id").notNull().references(() => users.id),
   filename: varchar("filename").notNull(),
   fileType: varchar("file_type").notNull(),
   fileSize: integer("file_size").notNull(),
